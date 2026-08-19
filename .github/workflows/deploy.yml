@@ -1,36 +1,61 @@
+# ==============================================================================
+# GitHub Actions Workflow: Deploy Main & Dev to GitHub Pages
+#
+# Purpose:
+#   Automatically builds and deploys your website to GitHub Pages whenever code 
+#   is pushed to the 'main' or 'dev' branches.
+# ==============================================================================
+
+# Name of the workflow as it appears in the GitHub 'Actions' tab
 name: Deploy Main & Dev to GitHub Pages
 
+# Triggers: Runs automatically on every push (or merged PR) to main or dev
 on:
   push:
     branches:
       - main
       - dev
 
+# Permissions required for the workflow to commit and push to the gh-pages branch
 permissions:
   contents: write
 
 jobs:
   deploy:
+    # Runs the workflow steps inside a fresh, cloud-hosted Ubuntu Linux container
     runs-on: ubuntu-latest
+    
     steps:
+      # ------------------------------------------------------------------------
+      # Step 1: Checkout the code
+      # Clones your repository into the virtual runner so subsequent steps can access it.
+      # ------------------------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Deploy main branch to root folder (/)
+      # ------------------------------------------------------------------------
+      # Step 2: Deploy Production ('main' branch)
+      # Triggers ONLY when code is pushed to 'main'.
+      # Target URL: https://KristianPerez.github.io/credit-card-tracker/
+      # ------------------------------------------------------------------------
       - name: Deploy Main
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          keep_files: true
+          publish_dir: ./         # Publishes root directory files (index.html, etc.)
+          keep_files: true        # Preserves existing subdirectories (like /dev)
 
-      # Deploy dev branch to subdirectory (/dev)
+      # ------------------------------------------------------------------------
+      # Step 3: Deploy Staging ('dev' branch)
+      # Triggers ONLY when code is pushed to 'dev'.
+      # Target URL: https://KristianPerez.github.io/credit-card-tracker/dev/
+      # ------------------------------------------------------------------------
       - name: Deploy Dev Subdirectory
         if: github.ref == 'refs/heads/dev'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          destination_dir: dev
-          keep_files: true
+          publish_dir: ./         # Publishes the current dev code
+          destination_dir: dev    # Places dev files into the /dev subfolder
+          keep_files: true        # Prevents main root files from being deleted
